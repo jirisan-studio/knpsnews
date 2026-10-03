@@ -7,6 +7,7 @@ import {AreaFilter} from '@/components/area-filter';
 import {getAreas} from '@/lib/news/dictionary';
 import {createSupabaseReader} from '@/lib/supabase/server';
 import type {NewsArea} from '@/lib/news/classify';
+import {KeywordSearch} from '@/components/keyword-search';
 
 const publishedDate = new Intl.DateTimeFormat("ko-KR", {
   timeZone: "Asia/Seoul", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false,
@@ -55,11 +56,14 @@ export default async function Home({searchParams}: {searchParams:Promise<Record<
           날짜와 뉴스 관심영역, 키워드로 국립공원 관련 언론보도를 찾아보는 공간입니다.
         </p>
 
+        <KeywordSearch params={params} />
         <DateFilters params={params} filters={filters} />
         <AreaFilter params={params} areas={areas} />
         <section aria-labelledby="setup-title" className="mt-5 rounded-2xl border border-brand/10 bg-white p-6 sm:p-8">
           <h2 id="setup-title" className="text-xl font-bold">{filters?.label || '검색 결과'} · {count}건</h2>
           {filters?.area && <p className="mt-2 text-sm font-semibold text-brand">{areas.find(area=>area.id===filters.area)?.name}</p>}
+          {filters?.q && <p className="mt-2 text-sm text-slate-600">검색어: {filters.q}</p>}
+          <Link href="/" prefetch={false} className="mt-3 inline-flex min-h-11 items-center text-sm text-brand underline underline-offset-4">검색 조건 초기화</Link>
           {filterError && <p role="alert" className="mt-3 text-sm text-red-700">{filterError}</p>}
           <p className="mt-3 text-sm leading-6 text-slate-600">
             {readFailed

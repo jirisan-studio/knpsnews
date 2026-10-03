@@ -20,8 +20,10 @@ export function parseFilters(params:SearchParams,now=new Date()) {
   if(from && to && from > to) throw new Error('시작일은 종료일보다 늦을 수 없습니다.');
   const rawPage=scalar(params,'page');
   const area=scalar(params,'area');
+  const q=scalar(params,'q').trim().normalize('NFKC');
+  if(q.length>100) throw new Error('검색어는 100자 이내로 입력해 주세요.');
   if(area && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(area)) throw new Error('관심영역을 다시 선택해 주세요.');
-  return {period,from:from || '2026-09-01',to,label,area,page:/^[1-9]\d{0,5}$/.test(rawPage)?Number(rawPage):1};
+  return {period,from:from || '2026-09-01',to,label,area,q,page:/^[1-9]\d{0,5}$/.test(rawPage)?Number(rawPage):1};
 }
 export function queryHref(params:SearchParams,changes:Record<string,string|undefined>) {
   const query=new URLSearchParams();

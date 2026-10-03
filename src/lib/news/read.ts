@@ -10,11 +10,15 @@ export async function getLatestNews(filters:ReturnType<typeof parseFilters>, kno
   const {page}=filters;
   const client = createSupabaseReader();
   const areas=knownAreas ?? await getAreas(client);
-  let query = client.from("articles")
-    .select(`id,title,summary,media_name,original_url,published_at,is_test,collection_keywords${filters.area?',article_news_areas!inner(news_area_id)':''}`, {count:'exact'})
+  let query = (filters.q ? client.rpc('search_news_filtered',{
+      search_text:filters.q,date_from:`${filters.from}T00:00:00+09:00`,
+      date_until:filters.to?`${shiftDate(filters.to,1)}T00:00:00+09:00`:null,
+      area_ids:filters.area?descendants(filters.area,areas):null,
+    },{count:'exact'}) : client.from("articles"))
+    .select(`id,title,summary,media_name,original_url,published_at,is_test,collection_keywords${filters.area && !filters.q?',article_news_areas!inner(news_area_id)':''}`, {count:'exact'})
     .eq('is_test',false).gte('published_at',`${filters.from}T00:00:00+09:00`);
   if(filters.to) query=query.lt('published_at',`${shiftDate(filters.to,1)}T00:00:00+09:00`);
-  if(filters.area) query=query.in('article_news_areas.news_area_id',descendants(filters.area,areas));
+  if(filters.area && !filters.q) query=query.in('article_news_areas.news_area_id',descendants(filters.area,areas));
   const { data, error, count } = await query
     .order("published_at", { ascending: false })
     .order("id", { ascending: false })
