@@ -6,7 +6,7 @@ export function DateFilters({params,filters}:{params:SearchParams;filters?:Retur
   <nav aria-label="빠른 날짜" className="flex flex-wrap gap-2">
    {[['today','오늘'],['yesterday','어제'],['week','최근 7일'],['month','이번 달'],['all','전체 기간']].map(([value,label])=><Link key={value} href={queryHref(params,{period:value,date:undefined,from:undefined,to:undefined,page:undefined})} prefetch={false} aria-current={filters?.period===value?'page':undefined} className={`min-h-11 rounded-lg px-3 py-3 text-sm ${filters?.period===value?'bg-brand text-white':'bg-brand/5 text-brand'}`}>{label}</Link>)}
   </nav>
-  <details className="mt-4">
+  <details key={`${filters?.period}:${filters?.from}:${filters?.to}`} className="mt-4">
    <summary className="cursor-pointer py-3 text-sm font-semibold text-brand">달력 · 특정 날짜 / 날짜 범위</summary>
    <form action="/" className="mt-3 flex flex-wrap items-end gap-3">
     <input type="hidden" name="period" value="date" />
