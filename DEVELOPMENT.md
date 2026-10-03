@@ -34,3 +34,15 @@
 Supabase 로그인 후 기존 `knpsnews` 프로젝트와 보안 설정을 확인하고 연결(STEP 6)을 진행한다.
 현재는 뉴스 목록, DB, API, 검색, 자동수집 기능을 구현하지 않았다.
 Secret 입력과 계정 권한 승인은 사용자가 직접 수행한다.
+
+## 2026-10-03 — Supabase 조회 연결 (STEP 6)
+
+- 기존 프로젝트 `knpsnews` / `wrhllrxbgxzxjhmlhsph`, Healthy 상태 확인.
+- Data API ON, Automatically expose new tables OFF, 기존 사용자 테이블 없음 확인.
+- Connect 화면의 공개 Publishable key만 사용. Secret / service_role 키에 접근하지 않음.
+- `.env.local`은 Git 제외. Vercel Production에 URL과 Publishable key 설정.
+- 공식 `@supabase/supabase-js` 조회 클라이언트와 server-only 모듈 추가.
+- API 루트 경로는 HTTP 401을 반환했으나 Auth 설정 API는 200, 실제 테이블 조회는 PGRST205(테이블 미구축)로 연결 검증.
+- 재사용 검사 명령은 API 루트 대신 공식 클라이언트로 뉴스 테이블을 조회하도록 수정.
+- `npm run check:supabase`, 빌드, 타입 검사, 코드 검사 통과.
+- 아직 뉴스 테이블이 없으므로 DB 데이터 조회 성공을 선언하지 않음. STEP 7에서 재검증.

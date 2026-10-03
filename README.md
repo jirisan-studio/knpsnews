@@ -11,7 +11,8 @@
 - STEP 3: 로컬 화면 표시, 빌드, 코드 검사, 타입 검사 통과. 상세 결과는 [개발 기록](./DEVELOPMENT.md) 참조.
 - STEP 4: 기본 프로젝트 커밋 `0a7eb6c`를 GitHub `main`에 반영.
 - STEP 5: Vercel 최초 배포 성공. [서비스 주소](https://knpsnews.vercel.app/)에서 기본 화면 확인.
-- 다음 단계: Supabase 로그인 후 기존 `knpsnews` 프로젝트를 확인하고 연결(STEP 6).
+- STEP 6: Supabase 공개 조회 연결을 로컬에서 검증. Vercel Production 조회용 환경변수 설정 완료.
+- 다음 단계: 뉴스 DB 구축(STEP 7).
 
 현재 화면은 구축 안내 화면이며 뉴스 조회나 수집은 아직 구현하지 않았습니다.
 초기 데이터 수집 시작일은 반드시 **2026-09-01**입니다.
@@ -58,15 +59,17 @@ NAVER 뉴스 API → 서버 수집 → 정리 / 중복 제거 / 규칙 기반 �
 
 ## 보안과 환경변수
 
-이 단계에는 환경변수가 필요 없습니다. 이후 다음 이름을 사용할 예정입니다(실제 값은 문서에 기록하지 않습니다).
+조회 연결에는 `.env.example`의 두 `NEXT_PUBLIC_` 값을 사용합니다. 실제 값은 Git에 기록하지 않습니다.
 
 - `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY` — 서버 전용
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — 공개 조회용, 권한은 RLS와 DB GRANT로 제한
+- `SUPABASE_SECRET_KEY` — 향후 수집 단계 서버 전용
 - `NAVER_CLIENT_ID` — 서버 전용
 - `NAVER_CLIENT_SECRET` — 서버 전용
 
 로컬 값은 `.env.local`, 배포 값은 Vercel의 **Project → Settings → Environment Variables**에 직접 입력합니다.
+`npm run check:supabase`로 조회 연결을 검사합니다. DB 구축 전에는 뉴스 테이블 미노출 상태가 표시됩니다.
+Supabase의 현행 Publishable / Secret 키 이름을 사용합니다. Legacy anon / service_role 키를 공개 변수에 넣지 않습니다.
 `.env*`, `.vercel`, 의존성과 빌드 결과는 Git 추적에서 제외합니다.
 RLS를 활성화하고 일반 사용자는 조회만 허용합니다.
 
