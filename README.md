@@ -8,8 +8,10 @@
 
 - STEP 1: 기존 README와 초기 커밋 확인. 원격 저장소와 로컬 일치 확인.
 - STEP 2: Next.js App Router + TypeScript + Tailwind CSS 기본 프로젝트 구성.
-- STEP 3: 실행 / 빌드 / 코드 검사 결과는 아래 개발 기록 참조.
-- STEP 4 이후: GitHub 반영 → Vercel 최초 배포 → Supabase 연결 순서로 진행.
+- STEP 3: 로컬 화면 표시, 빌드, 코드 검사, 타입 검사 통과. 상세 결과는 [개발 기록](./DEVELOPMENT.md) 참조.
+- STEP 4: 기본 프로젝트 커밋 `0a7eb6c`를 GitHub `main`에 반영.
+- STEP 5: Vercel 최초 배포 성공. [서비스 주소](https://knpsnews.vercel.app/)에서 기본 화면 확인.
+- 다음 단계: Supabase 로그인 후 기존 `knpsnews` 프로젝트를 확인하고 연결(STEP 6).
 
 현재 화면은 구축 안내 화면이며 뉴스 조회나 수집은 아직 구현하지 않았습니다.
 초기 데이터 수집 시작일은 반드시 **2026-09-01**입니다.
