@@ -1,4 +1,5 @@
 import {normalizeNews} from './normalize.ts';
+import {isDomesticParkNews} from './domestic.ts';
 import type {NaverNewsPage} from '../naver/client.ts';
 
 export async function collectKeyword(options:{
@@ -21,7 +22,10 @@ export async function collectKeyword(options:{
    const time=Date.parse(item.pubDate);
    if(!Number.isNaN(time) && time<Date.parse(options.from)) {reachedBoundary=true;continue;}
    if(!Number.isNaN(time) && time>=Date.parse(options.until)) continue;
-   try {batch.push(normalizeNews(item,options.keyword));} catch {skipped++;}
+   try {
+    const article=normalizeNews(item,options.keyword);
+    if(isDomesticParkNews(article)) batch.push(article);
+   } catch {skipped++;}
   }
   if(batch.length) {try {saved+=await options.save(batch);} catch {failed=true;break;}}
   if(reachedBoundary || result.items.length<display || start+result.items.length>result.total) break;

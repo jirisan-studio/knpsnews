@@ -16,7 +16,7 @@ export async function getLatestNews(filters:ReturnType<typeof parseFilters>, kno
       area_ids:filters.area?descendants(filters.area,areas):null,
     },{count:'exact'}) : client.from("articles"))
     .select(`id,title,summary,media_name,original_url,published_at,is_test,collection_keywords${filters.area && !filters.q?',article_news_areas!inner(news_area_id)':''}`, {count:'exact'})
-    .eq('is_test',false).gte('published_at',`${filters.from}T00:00:00+09:00`);
+    .eq('is_test',false).eq('is_domestic',true).gte('published_at',`${filters.from}T00:00:00+09:00`);
   if(filters.to) query=query.lt('published_at',`${shiftDate(filters.to,1)}T00:00:00+09:00`);
   if(filters.area && !filters.q) query=query.in('article_news_areas.news_area_id',descendants(filters.area,areas));
   const { data, error, count } = await query
