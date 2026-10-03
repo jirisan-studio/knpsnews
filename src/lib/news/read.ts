@@ -2,12 +2,17 @@ import "server-only";
 import { createSupabaseReader } from "@/lib/supabase/server";
 import { getAreas } from './dictionary.ts';
 import { ancestors } from './classify.ts';
+import type { parseFilters } from './filters.ts';
+import { shiftDate } from './filters.ts';
 
-export async function getLatestNews(page = 1) {
+export async function getLatestNews(filters:ReturnType<typeof parseFilters>) {
+  const {page}=filters;
   const client = createSupabaseReader();
-  const { data: articles, error, count } = await client.from("articles")
+  let query = client.from("articles")
     .select("id,title,summary,media_name,original_url,published_at,is_test,collection_keywords", {count:'exact'})
-    .eq('is_test',false)
+    .eq('is_test',false).gte('published_at',`${filters.from}T00:00:00+09:00`);
+  if(filters.to) query=query.lt('published_at',`${shiftDate(filters.to,1)}T00:00:00+09:00`);
+  const { data: articles, error, count } = await query
     .order("published_at", { ascending: false })
     .order("id", { ascending: false })
     .range((page - 1) * 20, page * 20 - 1);

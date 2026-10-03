@@ -1,6 +1,8 @@
 import { connection } from "next/server";
 import { getLatestNews } from "@/lib/news/read";
 import Link from 'next/link';
+import {parseFilters,queryHref} from '@/lib/news/filters';
+import {DateFilters} from '@/components/date-filters';
 
 const publishedDate = new Intl.DateTimeFormat("ko-KR", {
   timeZone: "Asia/Seoul", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false,
@@ -9,12 +11,15 @@ const publishedDate = new Intl.DateTimeFormat("ko-KR", {
 export default async function Home({searchParams}: {searchParams:Promise<Record<string,string|string[]|undefined>>}) {
   await connection();
   const params = await searchParams;
-  const page = typeof params.page === 'string' && /^[1-9]\d{0,5}$/.test(params.page) ? Number(params.page) : 1;
+  let filters:ReturnType<typeof parseFilters> | undefined;
+  let filterError='';
+  try {filters=parseFilters(params);} catch(error) {filterError=error instanceof Error?error.message:'검색 조건을 확인해 주세요.';}
+  const page=filters?.page ?? 1;
   let articles: Awaited<ReturnType<typeof getLatestNews>>['articles'] = [];
   let count = 0;
   let readFailed = false;
   try {
-    ({articles,count} = await getLatestNews(page));
+    if(filters) ({articles,count} = await getLatestNews(filters));
   } catch {
     readFailed = true;
   }
@@ -43,8 +48,10 @@ export default async function Home({searchParams}: {searchParams:Promise<Record<
           날짜와 뉴스 관심영역, 키워드로 국립공원 관련 언론보도를 찾아보는 공간입니다.
         </p>
 
-        <section aria-labelledby="setup-title" className="mt-9 rounded-2xl border border-brand/10 bg-white p-6 sm:p-8">
-          <h2 id="setup-title" className="text-xl font-bold">저장된 뉴스 · {count}건</h2>
+        <DateFilters params={params} filters={filters} />
+        <section aria-labelledby="setup-title" className="mt-5 rounded-2xl border border-brand/10 bg-white p-6 sm:p-8">
+          <h2 id="setup-title" className="text-xl font-bold">{filters?.label || '검색 결과'} · {count}건</h2>
+          {filterError && <p role="alert" className="mt-3 text-sm text-red-700">{filterError}</p>}
           <p className="mt-3 text-sm leading-6 text-slate-600">
             {readFailed
               ? "뉴스를 불러오지 못했습니다. 잠시 후 다시 접속해 주세요."
@@ -81,9 +88,9 @@ export default async function Home({searchParams}: {searchParams:Promise<Record<
           </section>
         )}
         {!readFailed && count > 0 && <nav aria-label="뉴스 페이지" className="mt-6 flex min-h-11 items-center justify-between text-sm text-brand">
-          {page > 1 ? <Link href={`/?page=${page-1}`} prefetch={false} className="rounded-lg border border-brand/20 px-4 py-3">이전</Link> : <span />}
+          {page > 1 ? <Link href={queryHref(params,{page:String(page-1)})} prefetch={false} className="rounded-lg border border-brand/20 px-4 py-3">이전</Link> : <span />}
           <span>{page} / {Math.ceil(count/20)} 페이지</span>
-          {page * 20 < count ? <Link href={`/?page=${page+1}`} prefetch={false} className="rounded-lg border border-brand/20 px-4 py-3">다음</Link> : <span />}
+          {page * 20 < count ? <Link href={queryHref(params,{page:String(page+1)})} prefetch={false} className="rounded-lg border border-brand/20 px-4 py-3">다음</Link> : <span />}
         </nav>}
       </main>
 
