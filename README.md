@@ -14,7 +14,7 @@
 - STEP 6: Supabase 공개 조회 연결을 로컬에서 검증. Vercel Production 조회용 환경변수 설정 완료.
 - STEP 7: 뉴스 DB 5개 테이블 생성, RLS 및 공개 조회/쓰기 차단 검증.
 - STEP 8: 실제 DB의 명확히 표시된 테스트 기사 1건을 조회해 표시. NAVER 연결은 아직 미구현.
-- 다음 단계: NAVER 서버 연결(STEP 9). Secret 입력은 사용자 직접 진행.
+- STEP 9 준비: 서버 전용 NAVER 모듈과 검사 도구 작성. Client ID / Secret 직접 입력 후 실제 호출 검증 필요.
 
 현재 화면은 구축 안내와 DB 연결 확인용 테스트 기사입니다. 실제 뉴스 수집과 검색 기능은 아직 구현하지 않았습니다.
 초기 데이터 수집 시작일은 반드시 **2026-09-01**입니다.
@@ -75,6 +75,20 @@ NAVER 뉴스 API → 서버 수집 → 정리 / 중복 제거 / 규칙 기반 �
 Supabase의 현행 Publishable / Secret 키 이름을 사용합니다. Legacy anon / service_role 키를 공개 변수에 넣지 않습니다.
 `.env*`, `.vercel`, 의존성과 빌드 결과는 Git 추적에서 제외합니다.
 RLS를 활성화하고 일반 사용자는 조회만 허용합니다.
+
+## NAVER 연결 준비 (STEP 9 진행 중)
+
+`src/lib/naver/client.ts`는 서버 전용입니다. 브라우저 뉴스 조회와 연결하지 않았습니다.
+뉴스 검색을 날짜순으로 요청하며, 잘못된 검색 조건/응답/타임아웃/HTTP 오류를 처리합니다.
+키는 요청 헤더에만 넣고 오류 응답 본문과 원본 네트워크 오류를 로그에 남기지 않습니다.
+
+1. NAVER 개발자 센터 / API HUB의 기존 `knpsnews` 애플리케이션을 엽니다.
+2. 로컬 `.env.local`의 `NAVER_CLIENT_ID=`와 `NAVER_CLIENT_SECRET=` 오른쪽에 각각 값을 직접 붙여넣고 저장합니다.
+3. 키를 채팅으로 보내지 않고 입력 완료만 알려주면 에이전트가 `npm run check:naver`로 실제 호출을 검증합니다.
+
+공식 요청 사양: https://developers.naver.com/docs/serviceapi/search/news/news.md
+이 단계의 실제 NAVER 호출은 아직 미검증입니다. 초기 수집/DB 저장/자동수집은 이후 단계입니다.
+`npm test`는 네트워크 호출 없이 오류 처리와 키가 URL/오류에 포함되지 않는지 검증합니다.
 
 ## DB 구조 적용
 
