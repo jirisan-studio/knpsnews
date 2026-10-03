@@ -12,7 +12,8 @@
     "check:supabase": "node scripts/check-supabase.mjs",
     "check:security": "node scripts/check-security.mjs",
     "check:naver": "node --conditions=react-server scripts/check-naver.mjs",
-    "test": "node --conditions=react-server --test tests/*.test.mjs"
+    "test": "node --conditions=react-server --test tests/*.test.mjs",
+    "check:storage": "node --conditions=react-server scripts/check-storage.mjs"
   },
   "engines": {
     "node": ">=22.0.0"
