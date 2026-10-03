@@ -1,5 +1,5 @@
 export type NewsArea = { id: string; name: string; type: string; parent_id: string | null; aliases: string[]; sort_order: number };
-export type CollectionKeyword = { id: string; keyword: string; news_area_id: string | null };
+export type CollectionKeyword = { id: string; keyword: string; news_area_id: string | null; last_collected_at?:string|null };
 
 const comparable = (value: string) => value.normalize('NFKC').replace(/\s+/g, '').toLocaleLowerCase('ko-KR');
 

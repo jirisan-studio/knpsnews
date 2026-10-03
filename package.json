@@ -17,7 +17,10 @@
     "check:dedup": "node --conditions=react-server scripts/check-dedup.mjs",
     "check:areas": "node --conditions=react-server scripts/check-areas.mjs",
     "check:area-filter": "node --conditions=react-server scripts/check-area-filter.mjs",
-    "check:search": "node scripts/check-search.mjs"
+    "check:search": "node scripts/check-search.mjs",
+    "collect": "node --conditions=react-server scripts/collect-news.mjs",
+    "check:lock": "node --conditions=react-server scripts/check-lock.mjs",
+    "collection:status": "node --conditions=react-server scripts/collection-status.mjs"
   },
   "engines": {
     "node": ">=22.0.0"

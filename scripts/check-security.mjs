@@ -18,6 +18,8 @@ try {
     ["Collection keywords private", () => client.from("collection_keywords").select("id").limit(0)],
     ["Collection logs private", () => client.from("collection_logs").select("id").limit(0)],
     ["Ingestion function private", () => client.rpc("ingest_news_article", { payload: {} })],
+    ["Batch ingestion private", () => client.rpc("ingest_news_batch", { payloads: [] })],
+    ["Collector lock private", () => client.from('collection_lock').select('id').limit(0)],
   ];
   for (const [name, query] of checks) {
     const { error, status } = await query();

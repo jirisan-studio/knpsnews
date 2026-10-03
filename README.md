@@ -13,11 +13,14 @@
 - STEP 5: Vercel 최초 배포 성공. [서비스 주소](https://knpsnews.vercel.app/)에서 기본 화면 확인.
 - STEP 6: Supabase 공개 조회 연결을 로컬에서 검증. Vercel Production 조회용 환경변수 설정 완료.
 - STEP 7: 뉴스 DB 5개 테이블 생성, RLS 및 공개 조회/쓰기 차단 검증.
-- STEP 8: 실제 DB의 명확히 표시된 테스트 기사 1건을 조회해 표시. NAVER 연결은 아직 미구현.
+- STEP 8: 실제 DB의 명확히 표시된 테스트 기사 1건을 조회해 표시.
 - STEP 9~10: NAVER API HUB 서버 연결과 실제 뉴스 검색 성공. 서버 전용 모듈/오류 처리 검증.
-- 다음 단계: 검색한 뉴스 DB 저장(STEP 11). 사용자 직접 Supabase 수집용 Secret key 입력 필요.
+- STEP 11~13: 실제 저장, 원자적 URL 중복 제거, DB 관심영역/검색어/분류 검증 완료.
+- STEP 14~18: 실제 뉴스 카드, 20건 페이지 나눔, 한국시간 날짜/관심영역/키워드/복합 검색 검증 완료.
+- STEP 19: 수집 파이프라인과 인증된 실행/상태 API 구현. 소량 실수집, 잠금, 접근 차단 검증 완료. Vercel 운영 인증정보 입력과 실제 예약 실행 확인은 대기 중.
+- STEP 20 이후: 전체 초기 적재, 실제 휴대폰 확인, 최종 운영 검증은 아직 완료되지 않음.
 
-현재 화면은 구축 안내와 DB 연결 확인용 테스트 기사입니다. 실제 뉴스 수집과 검색 기능은 아직 구현하지 않았습니다.
+화면은 DB에 저장한 실제 뉴스만 표시합니다. 테스트 원본은 삭제하지 않고 운영 조회에서 제외합니다.
 초기 데이터 수집 시작일은 반드시 **2026-09-01**입니다.
 
 ## 로컬 실행
@@ -29,7 +32,7 @@ npm ci
 npm run dev
 ```
 
-브라우저에서 http://localhost:3000 을 열면 KNPS NEWS 구축 안내가 표시됩니다.
+브라우저에서 http://localhost:3000 을 열면 KNPS NEWS 뉴스 목록과 검색 화면이 표시됩니다.
 
 ```sh
 npm run lint
@@ -51,14 +54,15 @@ npm run start
 GitHub 접근 권한 승인과 로그인이 필요한 경우 사용자가 직접 진행합니다.
 이후 DB와 뉴스 API 연결 단계에서 필요한 환경변수만 추가합니다.
 
-## 예정된 시스템 구조
+## 시스템 구조
 
 NAVER 뉴스 API → 서버 수집 → 정리 / 중복 제거 / 규칙 기반 분류 → Supabase → 뉴스 조회 화면.
 사용자 접속으로 NAVER API를 호출하지 않으며 기사 전문을 저장하지 않습니다.
 
 `articles`, `news_areas`, `article_news_areas`, `collection_keywords`, `collection_logs`를 구성했습니다.
 기사와 관심영역은 다대다로 연결하고 관심영역과 검색어는 DB에서 관리합니다.
-지리산은 하나의 기본 관심영역으로 제공하며 하위 지역 관계를 지원할 예정입니다.
+지리산은 하나의 기본 관심영역으로 제공하며 경남/전남/전북 하위 지역을 포함합니다.
+초기 사전은 관심영역 15개와 수집 검색어 20개이며 공식 전체 목록으로 가장하지 않습니다.
 
 ## 보안과 환경변수
 
@@ -66,9 +70,10 @@ NAVER 뉴스 API → 서버 수집 → 정리 / 중복 제거 / 규칙 기반 �
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — 공개 조회용, 권한은 RLS와 DB GRANT로 제한
-- `SUPABASE_SECRET_KEY` — 향후 수집 단계 서버 전용
+- `SUPABASE_SECRET_KEY` — 수집 단계 서버 전용
 - `NAVER_CLIENT_ID` — 서버 전용
 - `NAVER_CLIENT_SECRET` — 서버 전용
+- `CRON_SECRET` — 수집 실행/상태 API 인증용, 32자 이상 임의의 문자열
 
 로컬 값은 `.env.local`, 배포 값은 Vercel의 **Project → Settings → Environment Variables**에 직접 입력합니다.
 `npm run check:supabase`로 조회 연결을 검사합니다. DB 구축 전에는 뉴스 테이블 미노출 상태가 표시됩니다.
@@ -89,21 +94,21 @@ RLS를 활성화하고 일반 사용자는 조회만 허용합니다.
 
 공식 요청 사양: https://api.ncloud-docs.com/docs/naver-api-hub-search-news
 API HUB 전용 URL `/search/v1/news`와 `X-NCP-APIGW-API-KEY-ID` / `X-NCP-APIGW-API-KEY` 헤더를 사용합니다.
-실제 뉴스 검색 1건 응답을 확인했습니다. 초기 수집/실제 뉴스 DB 저장/자동수집은 이후 단계입니다.
+실제 뉴스 검색, 저장, 분류와 소량 파이프라인 실행을 확인했습니다. 전체 초기 적재와 운영 자동수집 확인은 별도로 진행합니다.
 `npm test`는 네트워크 호출 없이 오류 처리와 키가 URL/오류에 포함되지 않는지 검증합니다.
 
-## 다음 단계: 수집용 DB 키 입력
+## 수집용 DB 키
 
 Supabase **Project Settings → API Keys → Secret keys**에서 기존 Secret key를 확인합니다.
 로컬 `.env.local`의 `SUPABASE_SECRET_KEY=` 오른쪽에 값을 직접 입력해 저장합니다.
 조회용 Publishable key와 다른 서버 전용 키입니다. `NEXT_PUBLIC_` 변수에는 넣지 않습니다.
-API 키를 채팅에 보내지 않고 입력 완료만 알려주면 다음 단계 실제 저장 검증을 진행합니다.
+로컬 수집용 키는 사용자가 직접 입력했고 실제 저장 검증을 통과했습니다.
 운영 자동수집을 연결할 때는 같은 서버 전용 값을 Vercel Environment Variables에도 사용자가 직접 설정합니다.
 
 ## DB 구조 적용
 
-이미 운영 프로젝트에 첫 마이그레이션을 적용했습니다. 같은 파일을 재실행하지 않습니다.
-새 환경에서는 SQL Editor에서 `supabase/migrations/202610030001_news_schema.sql`을 한 번 실행합니다.
+이미 운영 프로젝트에 001~005 마이그레이션을 적용했습니다. 같은 파일을 재실행하지 않습니다.
+새 환경에서는 SQL Editor에서 `supabase/migrations/` 파일을 번호순으로 한 번씩 실행하고 `supabase/seeds/news-areas.sql`을 적용합니다.
 `supabase/verify-schema.sql`로 RLS와 테이블 권한을 확인합니다.
 public schema 노출을 유지하되 자동 신규 테이블 노출은 끄고, SQL GRANT로 필요한 세 테이블만 조회 허용합니다.
 검색어/수집 로그에는 일반 사용자 권한이나 정책을 추가하지 않습니다.
@@ -111,7 +116,7 @@ public schema 노출을 유지하되 자동 신규 테이블 노출은 끄고, S
 STEP 8 테스트 데이터는 `supabase/fixtures/connection-test.sql`로 저장했습니다.
 `is_test=true`, `source_type=manual`로 실제 언론보도와 구분하며 링크는 국립공원공단 홈페이지입니다.
 화면은 최신 20건만 조회하고 발행시간은 한국 시간으로 표시합니다.
-실제 수집 시작 시 운영 조회에서 `is_test=false` 조건을 적용해 테스트 기사를 제외합니다(원본은 삭제하지 않음).
+운영 조회에서 `is_test=false` 조건으로 테스트 기사를 제외합니다(원본은 삭제하지 않음).
 세부 지역은 DB에 보존하고 기본 화면의 관심영역 표시는 지리산으로 통합합니다.
 
 ## 디자인과 확장 원칙
@@ -120,3 +125,9 @@ STEP 8 테스트 데이터는 `supabase/fixtures/connection-test.sql`로 저장�
 향후 검색이나 뉴스 목록을 이 화면 언어에 맞춰 추가합니다.
 PDF, AI, 푸시 알림, 직원 로그인은 현재 범위에 포함하지 않습니다.
 DB 초기화나 정상 기능 삭제 없이 단계별 검증과 커밋을 진행합니다.
+
+## 운영과 자동수집
+
+사용자가 선택한 초기 스케줄은 Vercel 하루 1회, 한국시간 오전 6시입니다. Hobby의 실행 시각은 최대 약 1시간 늦어질 수 있습니다.
+수집과 상태 API는 `Authorization: Bearer <CRON_SECRET>` 없이 실행되지 않습니다.
+운영 환경변수 직접 입력, 초기 적재, 검색어 추가/비활성화, 장애 확인은 [운영 안내](./OPERATIONS.md)를 따릅니다.
