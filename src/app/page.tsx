@@ -3,6 +3,10 @@ import { getLatestNews } from "@/lib/news/read";
 import Link from 'next/link';
 import {parseFilters,queryHref} from '@/lib/news/filters';
 import {DateFilters} from '@/components/date-filters';
+import {AreaFilter} from '@/components/area-filter';
+import {getAreas} from '@/lib/news/dictionary';
+import {createSupabaseReader} from '@/lib/supabase/server';
+import type {NewsArea} from '@/lib/news/classify';
 
 const publishedDate = new Intl.DateTimeFormat("ko-KR", {
   timeZone: "Asia/Seoul", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false,
@@ -17,9 +21,12 @@ export default async function Home({searchParams}: {searchParams:Promise<Record<
   const page=filters?.page ?? 1;
   let articles: Awaited<ReturnType<typeof getLatestNews>>['articles'] = [];
   let count = 0;
+  let areas:NewsArea[]=[];
   let readFailed = false;
   try {
-    if(filters) ({articles,count} = await getLatestNews(filters));
+    areas=await getAreas(createSupabaseReader());
+    if(filters?.area && !areas.some(area=>area.id===filters?.area)) {filterError='현재 사용할 수 없는 관심영역입니다.';filters=undefined;}
+    if(filters) ({articles,count} = await getLatestNews(filters,areas));
   } catch {
     readFailed = true;
   }
@@ -49,8 +56,10 @@ export default async function Home({searchParams}: {searchParams:Promise<Record<
         </p>
 
         <DateFilters params={params} filters={filters} />
+        <AreaFilter params={params} areas={areas} />
         <section aria-labelledby="setup-title" className="mt-5 rounded-2xl border border-brand/10 bg-white p-6 sm:p-8">
           <h2 id="setup-title" className="text-xl font-bold">{filters?.label || '검색 결과'} · {count}건</h2>
+          {filters?.area && <p className="mt-2 text-sm font-semibold text-brand">{areas.find(area=>area.id===filters.area)?.name}</p>}
           {filterError && <p role="alert" className="mt-3 text-sm text-red-700">{filterError}</p>}
           <p className="mt-3 text-sm leading-6 text-slate-600">
             {readFailed
