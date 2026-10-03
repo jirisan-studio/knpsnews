@@ -1,16 +1,20 @@
 import { connection } from "next/server";
 import { getLatestNews } from "@/lib/news/read";
+import Link from 'next/link';
 
 const publishedDate = new Intl.DateTimeFormat("ko-KR", {
   timeZone: "Asia/Seoul", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false,
 });
 
-export default async function Home() {
+export default async function Home({searchParams}: {searchParams:Promise<Record<string,string|string[]|undefined>>}) {
   await connection();
-  let articles: Awaited<ReturnType<typeof getLatestNews>> = [];
+  const params = await searchParams;
+  const page = typeof params.page === 'string' && /^[1-9]\d{0,5}$/.test(params.page) ? Number(params.page) : 1;
+  let articles: Awaited<ReturnType<typeof getLatestNews>>['articles'] = [];
+  let count = 0;
   let readFailed = false;
   try {
-    articles = await getLatestNews();
+    ({articles,count} = await getLatestNews(page));
   } catch {
     readFailed = true;
   }
@@ -30,9 +34,9 @@ export default async function Home() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-5 py-10 sm:py-16">
+      <main className="mx-auto max-w-3xl px-5 py-6 sm:py-10">
         <p className="mb-3 text-sm font-semibold text-brand">국립공원 소식을 한곳에</p>
-        <h1 className="text-3xl font-bold leading-snug tracking-tight sm:text-4xl">
+        <h1 className="text-2xl font-bold leading-snug tracking-tight sm:text-3xl">
           업무에 필요한 뉴스,<br />쉽고 빠르게 확인하세요.
         </h1>
         <p className="mt-5 max-w-lg text-base leading-7 text-slate-600">
@@ -40,14 +44,13 @@ export default async function Home() {
         </p>
 
         <section aria-labelledby="setup-title" className="mt-9 rounded-2xl border border-brand/10 bg-white p-6 sm:p-8">
-          <span className="rounded-full bg-brand/5 px-3 py-1 text-xs font-semibold text-brand">서비스 구축 중</span>
-          <h2 id="setup-title" className="mt-5 text-xl font-bold">저장된 뉴스</h2>
+          <h2 id="setup-title" className="text-xl font-bold">저장된 뉴스 · {count}건</h2>
           <p className="mt-3 text-sm leading-6 text-slate-600">
             {readFailed
               ? "뉴스를 불러오지 못했습니다. 잠시 후 다시 접속해 주세요."
               : articles.length
-                ? "DB 연결을 확인하고 있습니다. 테스트 표시는 실제 언론보도가 아닙니다."
-                : "아직 저장된 뉴스가 없습니다. 뉴스 수집 연결을 준비하고 있습니다."}
+                ? "최신 발행순으로 표시합니다. 요약은 NAVER 뉴스 검색에서 제공한 내용입니다."
+                : "표시할 뉴스가 없습니다."}
           </p>
           <p className="mt-5 border-t border-slate-100 pt-5 text-sm leading-6 text-slate-600">
             초기 수집 기준일은 <time dateTime="2026-09-01" className="font-semibold text-brand">2026년 9월 1일</time>입니다.
@@ -68,6 +71,7 @@ export default async function Home() {
                   {article.media_name} · <time dateTime={article.published_at}>{publishedDate.format(new Date(article.published_at))}</time>
                 </p>
                 <p className="mt-4 text-sm leading-6 text-slate-600">{article.summary}</p>
+                <p className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">{article.collection_keywords.map((keyword:string) => <span key={keyword}>#{keyword}</span>)}</p>
                 <a href={article.original_url} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-11 items-center rounded-lg border border-brand/20 px-4 text-sm font-semibold text-brand focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
                   {article.is_test ? "공식 사이트 (테스트 링크)" : "원문 보기"}
                   <span className="sr-only"> · 새 창에서 열기</span>
@@ -76,6 +80,11 @@ export default async function Home() {
             ))}
           </section>
         )}
+        {!readFailed && count > 0 && <nav aria-label="뉴스 페이지" className="mt-6 flex min-h-11 items-center justify-between text-sm text-brand">
+          {page > 1 ? <Link href={`/?page=${page-1}`} prefetch={false} className="rounded-lg border border-brand/20 px-4 py-3">이전</Link> : <span />}
+          <span>{page} / {Math.ceil(count/20)} 페이지</span>
+          {page * 20 < count ? <Link href={`/?page=${page+1}`} prefetch={false} className="rounded-lg border border-brand/20 px-4 py-3">다음</Link> : <span />}
+        </nav>}
       </main>
 
       <footer className="mx-auto max-w-3xl px-5 pb-8 text-xs leading-5 text-slate-500">
