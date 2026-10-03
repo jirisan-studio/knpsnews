@@ -13,7 +13,8 @@
     "check:security": "node scripts/check-security.mjs",
     "check:naver": "node --conditions=react-server scripts/check-naver.mjs",
     "test": "node --conditions=react-server --test tests/*.test.mjs",
-    "check:storage": "node --conditions=react-server scripts/check-storage.mjs"
+    "check:storage": "node --conditions=react-server scripts/check-storage.mjs",
+    "check:dedup": "node --conditions=react-server scripts/check-dedup.mjs"
   },
   "engines": {
     "node": ">=22.0.0"

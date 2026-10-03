@@ -17,10 +17,11 @@ try {
     ["Article delete blocked", () => client.from("articles").delete().eq("id", missingId)],
     ["Collection keywords private", () => client.from("collection_keywords").select("id").limit(0)],
     ["Collection logs private", () => client.from("collection_logs").select("id").limit(0)],
+    ["Ingestion function private", () => client.rpc("ingest_news_article", { payload: {} })],
   ];
   for (const [name, query] of checks) {
     const { error, status } = await query();
-    const blocked = error && (status === 401 || status === 403 || (status === 404 && error.code === "PGRST205"));
+    const blocked = error && (status === 401 || status === 403 || (status === 404 && ["PGRST205", "PGRST202"].includes(error.code)));
     if (!blocked) throw new Error(name);
     console.log(`${name}: verified`);
   }
