@@ -12,7 +12,8 @@
 - STEP 4: 기본 프로젝트 커밋 `0a7eb6c`를 GitHub `main`에 반영.
 - STEP 5: Vercel 최초 배포 성공. [서비스 주소](https://knpsnews.vercel.app/)에서 기본 화면 확인.
 - STEP 6: Supabase 공개 조회 연결을 로컬에서 검증. Vercel Production 조회용 환경변수 설정 완료.
-- 다음 단계: 뉴스 DB 구축(STEP 7).
+- STEP 7: 뉴스 DB 5개 테이블 생성, RLS 및 공개 조회/쓰기 차단 검증.
+- 다음 단계: 테스트 뉴스 데이터 표시(STEP 8).
 
 현재 화면은 구축 안내 화면이며 뉴스 조회나 수집은 아직 구현하지 않았습니다.
 초기 데이터 수집 시작일은 반드시 **2026-09-01**입니다.
@@ -53,7 +54,7 @@ GitHub 접근 권한 승인과 로그인이 필요한 경우 사용자가 직접
 NAVER 뉴스 API → 서버 수집 → 정리 / 중복 제거 / 규칙 기반 분류 → Supabase → 뉴스 조회 화면.
 사용자 접속으로 NAVER API를 호출하지 않으며 기사 전문을 저장하지 않습니다.
 
-다음 단계에서 `articles`, `news_areas`, `article_news_areas`, `collection_keywords`, 수집 로그를 구성합니다.
+`articles`, `news_areas`, `article_news_areas`, `collection_keywords`, `collection_logs`를 구성했습니다.
 기사와 관심영역은 다대다로 연결하고 관심영역과 검색어는 DB에서 관리합니다.
 지리산은 하나의 기본 관심영역으로 제공하며 하위 지역 관계를 지원할 예정입니다.
 
@@ -69,9 +70,18 @@ NAVER 뉴스 API → 서버 수집 → 정리 / 중복 제거 / 규칙 기반 �
 
 로컬 값은 `.env.local`, 배포 값은 Vercel의 **Project → Settings → Environment Variables**에 직접 입력합니다.
 `npm run check:supabase`로 조회 연결을 검사합니다. DB 구축 전에는 뉴스 테이블 미노출 상태가 표시됩니다.
+`npm run check:security`로 실제 공개 API의 쓰기 차단과 관리 테이블 비공개 상태를 검증합니다.
 Supabase의 현행 Publishable / Secret 키 이름을 사용합니다. Legacy anon / service_role 키를 공개 변수에 넣지 않습니다.
 `.env*`, `.vercel`, 의존성과 빌드 결과는 Git 추적에서 제외합니다.
 RLS를 활성화하고 일반 사용자는 조회만 허용합니다.
+
+## DB 구조 적용
+
+이미 운영 프로젝트에 첫 마이그레이션을 적용했습니다. 같은 파일을 재실행하지 않습니다.
+새 환경에서는 SQL Editor에서 `supabase/migrations/202610030001_news_schema.sql`을 한 번 실행합니다.
+`supabase/verify-schema.sql`로 RLS와 테이블 권한을 확인합니다.
+public schema 노출을 유지하되 자동 신규 테이블 노출은 끄고, SQL GRANT로 필요한 세 테이블만 조회 허용합니다.
+검색어/수집 로그에는 일반 사용자 권한이나 정책을 추가하지 않습니다.
 
 ## 디자인과 확장 원칙
 

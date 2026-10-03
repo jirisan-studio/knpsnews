@@ -46,3 +46,13 @@ Secret 입력과 계정 권한 승인은 사용자가 직접 수행한다.
 - 재사용 검사 명령은 API 루트 대신 공식 클라이언트로 뉴스 테이블을 조회하도록 수정.
 - `npm run check:supabase`, 빌드, 타입 검사, 코드 검사 통과.
 - 아직 뉴스 테이블이 없으므로 DB 데이터 조회 성공을 선언하지 않음. STEP 7에서 재검증.
+
+## 2026-10-03 — 뉴스 DB 구조 (STEP 7)
+
+- `supabase/migrations/202610030001_news_schema.sql`을 실제 프로젝트에 적용. 기존 테이블 삭제/교체 없음.
+- articles / news_areas / article_news_areas / collection_keywords / collection_logs 생성.
+- 관심영역 parent-child, 기사 다대다 연결, DB 기반 별칭 사전, 수집 검색어, URL 중복 방지, 날짜/연결 인덱스 구성.
+- 모든 테이블 RLS ON. articles/활성 news_areas/기사-영역 관계만 anon와 authenticated SELECT 허용.
+- 일반 사용자 INSERT/UPDATE/DELETE 권한 없음. 검색어와 로그는 service_role만 접근.
+- `supabase/verify-schema.sql` 실행 결과 다섯 테이블 모두 RLS=true, 일반 사용자 쓰기 권한=false 확인.
+- 공개 키로 news_areas 실제 조회 성공 확인.
