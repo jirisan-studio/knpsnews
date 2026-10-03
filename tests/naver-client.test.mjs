@@ -8,9 +8,13 @@ test("requests date-sorted Korean news without putting credentials into the URL"
   const result = await searchNaverNews({ query: "지리산 반달가슴곰", display: 1 }, env, async (url, init) => {
     assert.equal(url.searchParams.get("query"), "지리산 반달가슴곰");
     assert.equal(url.searchParams.get("sort"), "date");
+    assert.equal(url.origin, "https://naverapihub.apigw.ntruss.com");
+    assert.equal(url.pathname, "/search/v1/news");
+    assert.equal(url.searchParams.get("format"), "json");
     assert.equal(url.searchParams.get("start"), "1");
     assert.equal(url.href.includes(env.NAVER_CLIENT_SECRET), false);
-    assert.equal(init.headers["X-Naver-Client-Secret"], env.NAVER_CLIENT_SECRET);
+    assert.equal(init.headers["X-NCP-APIGW-API-KEY-ID"], env.NAVER_CLIENT_ID);
+    assert.equal(init.headers["X-NCP-APIGW-API-KEY"], env.NAVER_CLIENT_SECRET);
     return Response.json({ total: 0, start: 1, display: 0, items: [] });
   });
   assert.deepEqual(result.items, []);

@@ -36,12 +36,12 @@ export async function searchNaverNews(
   const clientSecret = env.NAVER_CLIENT_SECRET?.trim();
   if (!clientId || !clientSecret) throw new Error("NAVER 서버 연결 환경변수가 필요합니다.");
 
-  const url = new URL("https://openapi.naver.com/v1/search/news.json");
-  url.search = new URLSearchParams({ query, start: String(start), display: String(display), sort: "date" }).toString();
+  const url = new URL("https://naverapihub.apigw.ntruss.com/search/v1/news");
+  url.search = new URLSearchParams({ query, start: String(start), display: String(display), sort: "date", format: "json" }).toString();
   let response: Response;
   try {
     response = await fetcher(url, {
-      headers: { "X-Naver-Client-Id": clientId, "X-Naver-Client-Secret": clientSecret },
+      headers: { "X-NCP-APIGW-API-KEY-ID": clientId, "X-NCP-APIGW-API-KEY": clientSecret },
       cache: "no-store",
       signal: AbortSignal.timeout(10_000),
       redirect: "error",
