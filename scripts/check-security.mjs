@@ -20,6 +20,9 @@ try {
     ["Ingestion function private", () => client.rpc("ingest_news_article", { payload: {} })],
     ["Batch ingestion private", () => client.rpc("ingest_news_batch", { payloads: [] })],
     ["Collector lock private", () => client.from('collection_lock').select('id').limit(0)],
+    ["Visitor identities private", () => client.from('site_visit_tokens').select('day').limit(0)],
+    ["Visitor totals write private", () => client.from('site_visit_days').insert({})],
+    ["Visitor counting function private", () => client.rpc('record_site_visit',{visitor_token:missingId})],
   ];
   for (const [name, query] of checks) {
     const { error, status } = await query();

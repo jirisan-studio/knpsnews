@@ -8,6 +8,7 @@ import {getAreas} from '@/lib/news/dictionary';
 import {createSupabaseReader} from '@/lib/supabase/server';
 import type {NewsArea} from '@/lib/news/classify';
 import {KeywordSearch} from '@/components/keyword-search';
+import {VisitorCounter} from '@/components/visitor-counter';
 
 const publishedDate = new Intl.DateTimeFormat("ko-KR", {
   timeZone: "Asia/Seoul", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false,
@@ -35,6 +36,8 @@ export default async function Home({searchParams}: {searchParams:Promise<Record<
     <div className="min-h-dvh">
       <header className="border-b border-brand/10 bg-white">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-5 py-5">
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- The requested logo action must reload the home document, including when already at home. */}
+          <a href="/" aria-label="KNPS NEWS 홈으로 이동" className="flex items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
           <span aria-hidden="true" className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-white">
             <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6">
               <path d="m3 19 7-13 4 7 2-4 5 10H3Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
@@ -44,17 +47,15 @@ export default async function Home({searchParams}: {searchParams:Promise<Record<
             <p className="text-lg font-bold tracking-wide text-brand">KNPS NEWS</p>
             <p className="text-xs text-slate-600">국립공원 뉴스 아카이브</p>
           </div>
+          </a>
         </div>
       </header>
 
       <main className="mx-auto max-w-3xl px-5 py-6 sm:py-10">
         <p className="mb-3 text-sm font-semibold text-brand">국립공원 소식을 한곳에</p>
-        <h1 className="text-2xl font-bold leading-snug tracking-tight sm:text-3xl">
-          업무에 필요한 뉴스,<br />쉽고 빠르게 확인하세요.
-        </h1>
-        <p className="mt-5 max-w-lg text-base leading-7 text-slate-600">
+        <h1 className="max-w-lg text-base font-bold leading-7 text-slate-800">
           날짜와 뉴스 관심영역, 키워드로 국립공원 관련 언론보도를 찾아보는 공간입니다.
-        </p>
+        </h1>
 
         <KeywordSearch params={params} />
         <DateFilters params={params} filters={filters} />
@@ -90,7 +91,7 @@ export default async function Home({searchParams}: {searchParams:Promise<Record<
                 <p className="mt-3 text-xs leading-5 text-slate-500">
                   {article.media_name} · <time dateTime={article.published_at}>{publishedDate.format(new Date(article.published_at))}</time>
                 </p>
-                <p className="mt-4 text-sm leading-6 text-slate-600">{article.summary}</p>
+                <p className="mt-4 line-clamp-3 text-sm leading-6 text-slate-600 sm:line-clamp-none">{article.summary}</p>
                 <p className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">{article.collection_keywords.map((keyword:string) => <span key={keyword}>#{keyword}</span>)}</p>
                 <a href={article.original_url} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-11 items-center rounded-lg border border-brand/20 px-4 text-sm font-semibold text-brand focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
                   {article.is_test ? "공식 사이트 (테스트 링크)" : "원문 보기"}
@@ -108,7 +109,8 @@ export default async function Home({searchParams}: {searchParams:Promise<Record<
       </main>
 
       <footer className="mx-auto max-w-3xl px-5 pb-8 text-xs leading-5 text-slate-500">
-        국립공원공단 직원을 위한 뉴스 아카이브 · KNPS NEWS
+        <p>국립공원공단 직원을 위한 뉴스 아카이브 · KNPS NEWS / 기획·제작: 이태건 | 개발 지원: ChatGPT</p>
+        <VisitorCounter />
       </footer>
     </div>
   );

@@ -18,3 +18,10 @@ test('includes descendants for parent filtering and terminates malformed cycles'
  assert.deepEqual(new Set(ancestors(['child'],cycle)),new Set(['child','park']));
  assert.deepEqual(new Set(descendants('park',cycle)),new Set(['park','child']));
 });
+
+test('North Korean product origin cannot force a Bukhansan park label',()=>{
+ const park={id:'b',name:'북한산국립공원',parent_id:null,aliases:['북한산'],sort_order:1,type:'park'};
+ const keyword={id:'k',keyword:'북한산',news_area_id:'b'};
+ assert.deepEqual(classifyNews({title:'북한산 농산물',summary:'송이버섯 원산지'},keyword,[park]),[]);
+ assert.deepEqual(classifyNews({title:'북한산국립공원 탐방',summary:'농산물 장터'},keyword,[park]),['b']);
+});

@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {collectKeyword} from '../src/lib/news/collect-keyword.ts';
 import {collectorAuthorized} from '../src/lib/news/authorize.ts';
-const item=(date)=>({title:'뉴스',description:'API 요약',originallink:'https://example.com/news',link:'https://news.naver.com/news',pubDate:date});
+const item=(date)=>({title:'국립공원공단 뉴스',description:'API 요약',originallink:'https://example.com/news',link:'https://news.naver.com/news',pubDate:date});
 const base={keyword:'국립공원',from:'2026-09-01T00:00:00+09:00',until:'2026-10-04T00:00:00+09:00',deadline:Date.now()+60000,display:2,maxPages:2};
 test('collection excludes old/future dates and records API result truncation',async()=>{
  let saved=0,calls=0;

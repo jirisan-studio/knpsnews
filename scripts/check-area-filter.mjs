@@ -8,7 +8,7 @@ import {searchNaverNews} from '../src/lib/naver/client.ts';
 nextEnv.loadEnvConfig(process.cwd());
 try {
  const client=createSupabaseCollector(),areas=await getAreas(client),keywords=await getCollectionKeywords(client);
- const park=areas.find(area=>area.name==='지리산'),keyword=keywords.find(k=>k.keyword==='지리산');
+ const park=areas.find(area=>area.name==='지리산국립공원'),keyword=keywords.find(k=>k.keyword==='지리산');
  if(!park || !keyword) throw new Error('지리산 사전 구성 오류');
  const page=await searchNaverNews({query:keyword.keyword,display:3});
  for(const item of page.items) {const article=normalizeNews(item,keyword.keyword);await storeNews(client,article,classifyNews(article,keyword,areas));}

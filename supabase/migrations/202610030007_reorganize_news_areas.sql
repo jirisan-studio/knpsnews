@@ -61,13 +61,5 @@ where area.active and not article.is_test and exists (
   regexp_replace(lower(term),'[[:space:]]','','g'))>0
 )
 on conflict do nothing;
-insert into public.news_areas(name,type,parent_id,sort_order,aliases)
-select child.name,'park',parent.id,child.sort_order,child.aliases
-from public.news_areas parent cross join (values
- ('지리산경남',31,array['지리산경남사무소','지리산 경남']),
- ('지리산전남',32,array['지리산전남사무소','지리산 전남']),
- ('지리산전북',33,array['지리산전북사무소','지리산 전북'])
-) child(name,sort_order,aliases) where parent.name='지리산국립공원'
-on conflict(name) do nothing;
 select pg_notify('pgrst','reload schema');
 commit;

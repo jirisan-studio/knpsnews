@@ -7,7 +7,7 @@ nextEnv.loadEnvConfig(process.cwd());
 try {
  const client=createSupabaseCollector();
  const areas=await getAreas(client), keywords=await getCollectionKeywords(client);
- const park=areas.find(a=>a.name==='지리산');
+ const park=areas.find(a=>a.name==='지리산국립공원');
  if(!park || descendants(park.id,areas).length!==4 || !keywords.length) throw new Error('관심영역/검색어 구성 오류');
  const fixture=await client.from('article_news_areas').select('news_area_id').eq('article_id','20000000-0000-4000-8000-000000000001');
  if(fixture.error || !fixture.data.some(link=>descendants(park.id,areas).includes(link.news_area_id))) throw new Error('지리산 하위 연결 조회 실패');

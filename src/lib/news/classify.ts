@@ -1,3 +1,4 @@
+import {isBukhansanParkNews} from './domestic.ts';
 export type NewsArea = { id: string; name: string; type: string; parent_id: string | null; aliases: string[]; sort_order: number };
 export type CollectionKeyword = { id: string; keyword: string; news_area_id: string | null; last_collected_at?:string|null };
 
@@ -22,7 +23,8 @@ export function descendants(id: string, areas: NewsArea[]) {
 
 export function classifyNews(article: { title: string; summary: string }, keyword: CollectionKeyword, areas: NewsArea[]) {
   const text = comparable(`${article.title} ${article.summary}`);
-  const matched = areas.filter(area => [area.name, ...area.aliases].some(term => term.trim() && text.includes(comparable(term)))).map(area => area.id);
-  if (keyword.news_area_id && areas.some(area => area.id === keyword.news_area_id)) matched.push(keyword.news_area_id);
+  const eligible=areas.filter(area=>!area.name.startsWith('북한산') || isBukhansanParkNews(article));
+  const matched = eligible.filter(area => [area.name, ...area.aliases].some(term => term.trim() && text.includes(comparable(term)))).map(area => area.id);
+  if (keyword.news_area_id && eligible.some(area => area.id === keyword.news_area_id)) matched.push(keyword.news_area_id);
   return ancestors(matched, areas);
 }
